@@ -126,12 +126,83 @@ xrightmargin=0.5em
     }
 \end{frame}
 
+\begin{frame}{}
+    This being clarified...
+\end{frame}
+
+\section{What is it in there to be excited about?}
+
+\begin{frame}[containsverbatim]{}
+
+\begin{shcode}
+$ roscore
+$ rosrun rviz rviz
+$ roslaunch openni_launch openni.launch
+\end{shcode}
+
+\end{frame}
+
+
+\imageframe{rviz0}
+
+\begin{frame}[containsverbatim]{}
+
+\begin{shcode}
+$ rosrun attention_tracker estimate 
+                         image:=/camera/rgb/image_color
+\end{shcode}
+
+\end{frame}
+
+\imageframe{rviz}
+
+\begin{frame}{}
+\end{frame}
+
+
+\section{Into the details: the key concepts}
+
+\section{Satellite libraries}
+
+\begin{frame}{TF}
+\end{frame}
+
+\begin{frame}{OpenCV}
+\end{frame}
+
+\begin{frame}{PCL}
+\end{frame}
+
+
+\section{Tooling}
+
+\begin{frame}{Tools}
+    \begin{table}[]
+        \begin{tabularx}{\linewidth}{l>{\raggedright}X}
+            \toprule
+            \texttt{rviz} & versatile 2D/3D visualization \tabularnewline
+            \texttt{rosconsole} & Centralized logging \tabularnewline
+            \texttt{rosbag} & Record and replay messages \tabularnewline
+            \texttt{rqt\_reconfigure} & Live configuration of nodes \tabularnewline
+            \texttt{rqt\_diagnostics} & Standardized diagnostics \tabularnewline
+            \texttt{rosgraph} & plots the node network \tabularnewline
+            + tons of introspection tools & Print out/publish/call messages, services, nodes \tabularnewline
+            \bottomrule
+        \end{tabularx}
+        \label{tab:options}
+    \end{table}
+\end{frame}
+
+\section{ROS vs YARP}
+
 
 \begin{frame}{Getting the terminology right}
     \begin{table}[]
         \begin{tabularx}{\linewidth}{l>{\raggedright}X}
             \toprule
             \textbf{YARP}			& \textbf{ROS} \tabularnewline
+            \midrule
+            \texttt{yarpserver}		& \texttt{roscore} \tabularnewline
             \midrule
             \texttt{bottle}		& \texttt{message} \tabularnewline
             \texttt{noserifmath}		& \texttt{topic} \tabularnewline
@@ -141,6 +212,7 @@ xrightmargin=0.5em
         \label{tab:options}
     \end{table}
 \end{frame}
+
 
 \end{document}
 
