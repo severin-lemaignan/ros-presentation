@@ -1,0 +1,151 @@
+%!TEX program = xelatex
+
+\documentclass[compress]{beamer}
+%--------------------------------------------------------------------------
+% Common packages
+%--------------------------------------------------------------------------
+\usepackage[english]{babel}
+\usepackage{pgfpages} % required for notes on second screen
+\usepackage{graphicx}
+
+\usepackage{multicol}
+
+\usepackage{tabularx,ragged2e}
+\usepackage{booktabs}
+
+\usepackage{listings}
+\lstset{ %
+language=[LaTeX]TeX,
+basicstyle=\normalsize\ttfamily,
+keywordstyle=,
+numbers=left,
+numberstyle=\tiny\ttfamily,
+stepnumber=1,
+showspaces=false,
+showstringspaces=false,
+showtabs=false,
+breaklines=true,
+frame=tb,
+framerule=0.5pt,
+tabsize=4,
+framexleftmargin=0.5em,
+framexrightmargin=0.5em,
+xleftmargin=0.5em,
+xrightmargin=0.5em
+}
+
+
+%--------------------------------------------------------------------------
+% Load theme
+%--------------------------------------------------------------------------
+\usetheme{hri}
+
+\usepackage{dtklogos} % must be loaded after theme
+\usepackage{tikz}
+\usetikzlibrary{mindmap,backgrounds,positioning}
+
+\graphicspath{{figs/}}
+
+%--------------------------------------------------------------------------
+% General presentation settings
+%--------------------------------------------------------------------------
+\title{The Robot Operating System}
+\subtitle{High-Altitude Overview of ROS}
+\date{\today}
+\author{Séverin Lemaignan}
+\institute{Centre for Robotics and Neural Systems\\ {\Medium Plymouth University}}
+
+%--------------------------------------------------------------------------
+% Notes settings
+%--------------------------------------------------------------------------
+%\setbeameroption{show notes on second screen}
+
+\begin{document}
+%--------------------------------------------------------------------------
+% Titlepage
+%--------------------------------------------------------------------------
+
+\maketitle
+
+%--------------------------------------------------------------------------
+% Table of contents
+%--------------------------------------------------------------------------
+%\section*{Overview}
+%\begin{frame}{Overview}
+%	% hideallsubsections ist empfehlenswert für längere Präsentationen
+%	\tableofcontents[hideallsubsections]
+%\end{frame}
+
+%--------------------------------------------------------------------------
+% Content
+%--------------------------------------------------------------------------
+\section{ROS is not an operating system}
+
+\begin{frame}{Instead, ROS is...}
+    \begin{itemize}
+        \item<1-> A fairly simple message passing system designed with robotics in
+            mind
+        \item<2-> An API to this system (in several languages -- C++ and Python are
+            1st tier)
+        \item<3> \Medium{A middleware?}
+        \item<4-> A set of conventions to write and package robotic softwares
+        \item<5-> A set of standard message types that facilitate interoperability
+            between modules
+        \item<6-> A set of tools to run and monitor the nodes
+        \item<7-> A very large academic community leading to a library of thousands of nodes
+    \end{itemize}
+\end{frame}
+
+\begin{frame}{ROS Ecosystem}
+    \centering
+    \resizebox{0.9\textwidth}{!}{%
+        \vspace*{4cm}
+        \begin{tikzpicture}
+
+            \path[small mindmap,
+                  level 1 concept/.append style={sibling angle=360/5}, 
+                  level 2 concept/.append style={sibling angle=60}, 
+                  concept color=hriWarmGreyLight,text=hriWarmGreyDark]
+
+            node[concept] {\Medium ROS}
+            [clockwise from=-180]
+            child[concept color=hriSec1Dark,text=white] { node[concept]{Middleware} 
+                [clockwise from=-120]
+                child[concept color=hriSec1CompDark,text=white] { node[concept]{Standard Interfaces} }
+                child[concept color=hriSec3CompDark,text=white] { node[concept]{Nodes Management} }
+                child[concept color=hriSec2Dark,text=white] { node[concept]{IPC} }
+            }
+            child[concept color=hriSec3Comp,text=white] { node[concept] {Standards and Conventions} }
+            child[concept color=hriSec2CompDark,text=white] { node[concept]{Software engineering infrastructure} }
+            child[concept color=hriSec3Dark,text=white] { node[concept] {Large software library} 
+                [clockwise from=0]
+                child[concept color=hriSec2Dark,text=white] { node[concept] {Satellite libraries} }
+            }
+            child[concept color=hriSec3CompDark,text=white] { node[concept] {Tooling} };
+        \end{tikzpicture}
+    }
+\end{frame}
+
+
+\begin{frame}{Getting the terminology right}
+    \begin{table}[]
+        \begin{tabularx}{\linewidth}{l>{\raggedright}X}
+            \toprule
+            \textbf{YARP}			& \textbf{ROS} \tabularnewline
+            \midrule
+            \texttt{bottle}		& \texttt{message} \tabularnewline
+            \texttt{noserifmath}		& \texttt{topic} \tabularnewline
+            \texttt{nosectionpages} & \texttt{action} (async) or \texttt{service} (sync) \tabularnewline
+            \bottomrule
+        \end{tabularx}
+        \label{tab:options}
+    \end{table}
+\end{frame}
+
+\end{document}
+
+
+
+
+
+
