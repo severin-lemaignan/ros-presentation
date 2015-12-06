@@ -130,7 +130,7 @@ xrightmargin=0.5em
     This being clarified...
 \end{frame}
 
-\section{What is it in there to be excited about?}
+\section{How does it look like?}
 
 \begin{frame}[containsverbatim]{}
 
@@ -156,11 +156,278 @@ $ rosrun attention_tracker estimate
 
 \imageframe{rviz}
 
-\begin{frame}{}
+\begin{frame}[containsverbatim]{}
+\begin{shcode}
+$ rosnode list 
+/camera_base_link
+/camera_base_link1
+/camera_base_link2
+/camera_base_link3
+/ros_attention_tracker
+/rosout
+/camera/camera_nodelet_manager
+/camera/debayer
+/camera/depth_metric
+/camera/depth_metric_rect
+/camera/depth_points
+/camera/depth_rectify_depth
+/camera/depth_registered_hw_metric_rect
+/camera/depth_registered_metric
+/camera/depth_registered_rectify_depth
+/camera/depth_registered_sw_metric_rect
+/camera/disparity_depth
+/camera/disparity_registered_hw
+/camera/disparity_registered_sw
+/camera/driver
+/camera/points_xyzrgb_hw_registered
+/camera/points_xyzrgb_sw_registered
+/camera/rectify_color
+/camera/rectify_ir
+/camera/rectify_mono
+/camera/register_depth_rgb
+\end{shcode}
+
+\end{frame}
+
+\begin{frame}[containsverbatim]{}
+\begin{shcode}
+$ rostopic list
+/camera_info
+/image
+/nb_detected_faces
+/rosout
+/rosout_agg
+/tf
+/camera/depth/image_rect_raw
+/camera/depth/image_rect_raw/compressed
+/camera/depth/image_rect_raw/compressed/parameter_descriptions
+/camera/depth/image_rect_raw/compressed/parameter_updates
+/camera/depth/image_rect_raw/compressedDepth
+/camera/depth/image_rect_raw/compressedDepth/parameter_descriptions
+/camera/depth/image_rect_raw/compressedDepth/parameter_updates
+/camera/depth/image_rect_raw/theora
+/camera/depth/image_rect_raw/theora/parameter_descriptions
+/camera/depth/image_rect_raw/theora/parameter_updates
+/camera/depth_rectify_depth/parameter_descriptions
+/camera/depth_rectify_depth/parameter_updates
+\end{shcode}
+
+\end{frame}
+
+\begin{frame}[containsverbatim]{}
+\begin{shcode}
+$ rostopic echo tf
+transforms: 
+  - 
+    header: 
+      seq: 0
+      stamp: 
+        secs: 1449222890
+        nsecs: 396561780
+      frame_id: /camera_link
+    child_frame_id: /camera_rgb_frame
+    transform: 
+      translation: 
+        x: 0.0
+        y: -0.045
+        z: 0.0
+      rotation: 
+        x: 0.0
+        y: 0.0
+        z: 0.0
+        w: 1.0
+---
+transforms: 
+  - 
+    header: 
+      seq: 0
+      stamp: 
+        secs: 1449222890
+
+\end{shcode}
+
 \end{frame}
 
 
+\begin{frame}[containsverbatim]{}
+
+\begin{shcode}
+$ rosrun rqt_reconfigure rqt_reconfigure
+\end{shcode}
+
+\end{frame}
+
+
+\imageframe{dynamic_reconfigure.png}
+
+\begin{frame}[containsverbatim]{}
+
+\begin{pythoncode}
+import sys, cv2, rospy
+from sensor_msgs.msg import Image
+from cv_bridge import CvBridge
+
+def on_image(data):
+    cv_image = bridge.imgmsg_to_cv2(data, "bgr8")
+    (rows,cols,channels) = cv_image.shape
+    cv2.circle(cv_image, (cols/2,rows/2), 50,(0,0,255), -1)
+    cv2.imshow("Image window", cv_image)
+    cv2.waitKey(3)
+    image_pub.publish(bridge.cv2_to_imgmsg(cv_image, "bgr8"))
+
+rospy.init_node('image_processor')
+bridge = CvBridge()
+image_pub = rospy.Publisher("processed_image",Image)
+image_sub = rospy.Subscriber("image",Image, on_image)
+
+while not rospy.is_shutdown():
+    rospy.spin()
+\end{pythoncode}
+
+\end{frame}
+
+\begin{frame}[containsverbatim]{}
+
+\begin{shcode}
+$ roslaunch gscam v4l.launch
+$ python test.py image:=/v4l/camera/image_raw
+\end{shcode}
+
+\end{frame}
+
+
+\imageframe{image_processor.png}
+
+
+
+
 \section{Into the details: the key concepts}
+
+\begin{frame}{Talking Nodes}
+
+\begin{center}
+\begin{tikzpicture}[
+                    >=latex,
+                    every edge/.style={->, draw, very thick},
+                    service/.style={->, draw, very thick,dashed},
+                    rosnode/.style={draw, font=\sf, node distance=0.5, rounded
+                    corners, align=center, inner sep=5pt,fill=hriSec2Dark!50},
+                    topic/.style={font=\tt, node distance=0.5, align=center, inner sep=5pt},
+                    pic/.style={fill=none,draw=none}
+                ]
+
+    \path[use as bounding box] (-6,1) rectangle (6,-5);
+    \node [rosnode] at (0,0) (node1) {node 1};
+    \node [rosnode] at (4,-2) (node2) {node 2};
+    \node [rosnode] at (-5,-4) (node3) {node 3};
+
+    \uncover<2-> {
+        \node [topic] at (1,-2) (topic1) {/topic1};
+        \node [topic] at (-1,-3) (topic2) {/topic2};
+        \node [topic] at (-4,-2) (topic3) {/topic3};
+        \path (node1) edge[bend left] node[label,right] {\only<2-3>{publishes}} (topic1);
+        \path (node1) edge[bend right] node[label,left] {\only<2-3>{publishes}} (topic2);
+        \path (node3) edge[bend left] node[label,left] {\only<2-3>{publishes}} (topic3);
+    }
+    \uncover<3-> {
+        \path (topic1) edge[bend right] node[label,below left] {\only<3>{subscribes}} (node2);
+        \path (topic2) edge[bend left] node[label,below] {\only<3>{subscribes}} (node3);
+        \path (topic2) edge[bend right] (node2);
+    }
+    \only<4-5> {
+        \path[->, dashed] ([yshift=2pt]node1.east) edge[bend left] node[label,above right] {service (RPC)} ([xshift=2pt]node2.north) ;
+    }
+    \only<5> {
+        \path[->, dashed] ([xshift=-2pt]node2.north) edge[bend right] ([yshift=-2pt]node1.east);
+
+    }
+
+    \uncover<6-> {
+        \path[->, dashed] ([yshift=2pt]node1.east) edge[bend left] node[label,above right] {action goal} ([xshift=2pt]node2.north) ;
+    }
+    \uncover<7-> {
+        \path[->, dashed] ([xshift=-2pt]node2.north) edge[bend right] node[label,below left] {result} ([yshift=-2pt]node1.east);
+
+    }
+
+
+\end{tikzpicture}
+\only<5>{Services: \Medium synchronous}
+\only<7>{Actions: \Medium asynchronous}
+\end{center}
+
+\end{frame}
+
+\begin{frame}[containsverbatim]{Messages}
+
+\begin{shcode}
+$ rosmsg show geometry_msgs/Pose
+geometry_msgs/Point position
+  float64 x
+  float64 y
+  float64 z
+geometry_msgs/Quaternion orientation
+  float64 x
+  float64 y
+  float64 z
+  float64 w
+\end{shcode}
+\end{frame}
+
+\begin{frame}[containsverbatim]{Messages}
+\begin{shcode}
+$ rosmsg show sensor_msgs/Image 
+std_msgs/Header header
+    uint32 seq
+    time stamp
+    string frame_id
+uint32 height
+uint32 width
+string encoding
+uint8 is_bigendian
+uint32 step
+uint8[] data
+\end{shcode}
+
+\end{frame}
+
+\begin{frame}[containsverbatim]{Messages}
+\begin{shcode}
+$ rostopic echo /camera/image_raw 
+header: 
+    seq: 56
+    stamp: 
+      secs: 1449243166
+      nsecs: 415330019
+    frame_id: /camera_frame
+height: 720
+width: 1280
+encoding: rgb8
+is_bigendian: 0
+step: 3840
+data: [32, 57, 51, 36, 61, 55, 41, 63, 60,...
+$
+\end{shcode}
+\end{frame}
+
+
+\begin{frame}{ROS vs YARP terminology}
+    \begin{table}[]
+        \begin{tabularx}{\linewidth}{l>{\raggedright}X}
+            \toprule
+            \textbf{YARP}			& \textbf{ROS} \tabularnewline
+            \midrule
+            \texttt{Port}		& \texttt{topic} \tabularnewline
+            \texttt{RpcClient/RpcServer} & \texttt{action} (async) or \texttt{service} (sync) \tabularnewline
+            \texttt{Bottle}		& \texttt{message} \tabularnewline
+            \bottomrule
+        \end{tabularx}
+        \label{tab:options}
+    \end{table}
+
+    Connections of ports: explicit with YARP, implicit with ROS
+\end{frame}
+
 
 \section{Satellite libraries}
 
@@ -193,26 +460,24 @@ $ rosrun attention_tracker estimate
     \end{table}
 \end{frame}
 
-\section{ROS vs YARP}
-
-
-\begin{frame}{Getting the terminology right}
+\begin{frame}{ROS vs YARP terminology}
     \begin{table}[]
         \begin{tabularx}{\linewidth}{l>{\raggedright}X}
             \toprule
             \textbf{YARP}			& \textbf{ROS} \tabularnewline
             \midrule
             \texttt{yarpserver}		& \texttt{roscore} \tabularnewline
-            \midrule
-            \texttt{bottle}		& \texttt{message} \tabularnewline
-            \texttt{noserifmath}		& \texttt{topic} \tabularnewline
-            \texttt{nosectionpages} & \texttt{action} (async) or \texttt{service} (sync) \tabularnewline
+            \texttt{yarpscope/yarpview}		& \texttt{rviz} \tabularnewline
+            \texttt{yarpdatadumper/yarpdataplayer}		& \texttt{rosbag} \tabularnewline
+            \texttt{yarpmanager}		& \texttt{roslaunch} \tabularnewline
             \bottomrule
         \end{tabularx}
         \label{tab:options}
     \end{table}
+
 \end{frame}
 
+\imageframe{rviz}
 
 \end{document}
 
