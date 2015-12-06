@@ -2,6 +2,7 @@
 LATEX=lualatex
 TARGET=presentation.tex
 
+SKETCHES=$(wildcard sketches/*.sk)
 DOT=$(wildcard figs/*.dot)
 SVG=$(wildcard figs/*.svg)
 
@@ -9,6 +10,9 @@ all: paper
 
 %.pdf: %.svg
 	inkscape --export-pdf $(@) $(<)
+
+$(SKETCHES:.sk=.tex): %.tex: %.sk
+	sketch $(<) -o $(@)
 
 %.aux: paper
 
@@ -24,7 +28,7 @@ bib: $(TARGET:.tex=.aux)
 
 	BSTINPUTS=:./style bibtex $(TARGET:.tex=.aux)
 
-paper: $(TARGET) $(SVG:.svg=.pdf) $(DOT:.dot=.pdf)
+paper: $(TARGET) $(SVG:.svg=.pdf) $(DOT:.dot=.pdf) $(SKETCHES:.sk=.tex)
 
 	TEXINPUTS=:./style $(LATEX) -shell-escape $(TARGET)
 

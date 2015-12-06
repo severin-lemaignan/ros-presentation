@@ -42,7 +42,7 @@ xrightmargin=0.5em
 
 \usepackage{dtklogos} % must be loaded after theme
 \usepackage{tikz}
-\usetikzlibrary{mindmap,backgrounds,positioning}
+\usetikzlibrary{intersections,arrows,shapes,calc,mindmap,backgrounds,positioning,svg.path}
 
 \graphicspath{{figs/}}
 
@@ -87,12 +87,12 @@ xrightmargin=0.5em
             mind
         \item<2-> An API to this system (in several languages -- C++ and Python are
             1st tier)
-        \item<3> \Medium{A middleware?}
-        \item<4-> A set of conventions to write and package robotic softwares
-        \item<5-> A set of standard message types that facilitate interoperability
-            between modules
-        \item<6-> A set of tools to run and monitor the nodes
-        \item<7-> A very large academic community leading to a library of thousands of nodes
+        \item<3-> A set of standard message types that facilitate interoperability between modules
+        \item<4> \Medium{A middleware?}
+        \item<5-> A set of conventions to write and package robotic softwares
+        \item<6-> Deep integration of a few key open-source libraries (OpenCV, PCL, tf)
+        \item<7-> A set of tools to run and monitor the nodes
+        \item<8-> Engagement of a large academic community, leading to a library of thousands of nodes
     \end{itemize}
 \end{frame}
 
@@ -116,7 +116,12 @@ xrightmargin=0.5em
                 child[concept color=hriSec2Dark,text=white] { node[concept]{IPC} }
             }
             child[concept color=hriSec3Comp,text=white] { node[concept] {Standards and Conventions} }
-            child[concept color=hriSec2CompDark,text=white] { node[concept]{Software engineering infrastructure} }
+            child[concept color=hriSec2CompDark,text=white] { node[concept]{Community}
+                [clockwise from=90]
+                child[concept color=hriSec2Comp,text=white] { node[concept]{Software engineering infrastructure} }
+                child[concept color=hriSec1,text=white] { node[concept] {REPs} }
+                child[concept color=hriSec3,text=white] { node[concept] {ROSCon} }
+            }
             child[concept color=hriSec3Dark,text=white] { node[concept] {Large software library} 
                 [clockwise from=0]
                 child[concept color=hriSec2Dark,text=white] { node[concept] {Satellite libraries} }
@@ -260,6 +265,64 @@ $ rosrun rqt_reconfigure rqt_reconfigure
 
 \imageframe{dynamic_reconfigure.png}
 
+\begin{frame}{Example: a simple image processing pipeline}
+
+\begin{center}
+\begin{tikzpicture}[
+                    >=latex,
+                    every edge/.style={->, draw, very thick},
+                    service/.style={->, draw, very thick,dashed},
+                    rosnode/.style={draw, font=\sf, node distance=0.5, rounded
+                    corners, align=center, inner sep=5pt,fill=hriSec2Dark!50},
+                    topic/.style={font=\tt, node distance=0.5, align=center, inner sep=5pt},
+                    pic/.style={fill=none,draw=none}
+                ]
+
+    \node [rosnode] at (-4,0) (node1) {image acquisition};
+    \node [rosnode] at (0,-2) (node2) {image processor};
+    \node [rosnode] at (4,-4) (node3) {next processing};
+
+        \node [topic] at (-4,-1.5) (topic3) {/image};
+        \node [topic] at (-1,-3.5) (topic1) {/processed\_image};
+        \path (node1) edge[bend right] (node2);
+        \path (node2) edge[bend right] (node3);
+
+
+\end{tikzpicture}
+\end{center}
+
+\end{frame}
+
+%\begin{frame}{Example: a simple image processing pipeline}
+%
+%\begin{center}
+%\begin{tikzpicture}[
+%                    >=latex,
+%                    every edge/.style={->, draw, very thick},
+%                    service/.style={->, draw, very thick,dashed},
+%                    rosnode/.style={draw, font=\sf, node distance=0.5, rounded
+%                    corners, align=center, inner sep=5pt,fill=hriSec2Dark!50},
+%                    topic/.style={font=\tt, node distance=0.5, align=center, inner sep=5pt},
+%                    pic/.style={fill=none,draw=none}
+%                ]
+%
+%    \node [rosnode] at (-4,0) (node1) {\tt gscam};
+%    \node [rosnode] at (0,-2) (node2) {\tt our\_processing};
+%    \node [rosnode] at (4,-4) (node3) {\tt next\_processing};
+%
+%        \node [topic] at (-1.2,-0.7) (topic2) {/v4l/camera/image\_raw};
+%        \node [topic] at (-2.4,-2.2) (topic3) {/image};
+%        \node [topic] at (1.4,-2.7) (topic1) {/processed\_image};
+%        \path (node1) edge[bend right] (node2);
+%        \path (node2) edge[bend right] (node3);
+%
+%
+%\end{tikzpicture}
+%\end{center}
+%
+%\end{frame}
+
+
 \begin{frame}[containsverbatim]{}
 
 \begin{pythoncode}
@@ -267,8 +330,8 @@ import sys, cv2, rospy
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge
 
-def on_image(data):
-    cv_image = bridge.imgmsg_to_cv2(data, "bgr8")
+def on_image(image):
+    cv_image = bridge.imgmsg_to_cv2(image, "bgr8")
     (rows,cols,channels) = cv_image.shape
     cv2.circle(cv_image, (cols/2,rows/2), 50,(0,0,255), -1)
     cv2.imshow("Image window", cv_image)
@@ -277,8 +340,8 @@ def on_image(data):
 
 rospy.init_node('image_processor')
 bridge = CvBridge()
-image_pub = rospy.Publisher("processed_image",Image)
 image_sub = rospy.Subscriber("image",Image, on_image)
+image_pub = rospy.Publisher("processed_image",Image)
 
 while not rospy.is_shutdown():
     rospy.spin()
@@ -290,7 +353,8 @@ while not rospy.is_shutdown():
 
 \begin{shcode}
 $ roslaunch gscam v4l.launch
-$ python test.py image:=/v4l/camera/image_raw
+$ python image_processor.py image:=/v4l/camera/image_raw
+$ rosrun image_view image_view image:=/processed_image
 \end{shcode}
 
 \end{frame}
@@ -406,7 +470,6 @@ encoding: rgb8
 is_bigendian: 0
 step: 3840
 data: [32, 57, 51, 36, 61, 55, 41, 63, 60,...
-$
 \end{shcode}
 \end{frame}
 
@@ -429,17 +492,21 @@ $
 \end{frame}
 
 
-\section{Satellite libraries}
-
-\begin{frame}{TF}
+\begin{frame}{Transformations}
+    \only<1>{
+    \begin{center}
+        \includegraphics[height=0.9\textheight]{nao_markers}
+    \end{center}
+}
+%\only<2> {
+%    \input{sketches/scene-graph-only-cube.tex}
+%}
+\only<2> {
+    \begin{center}
+    \input{sketches/scene-graph-cube.tex}
+    \end{center}
+}
 \end{frame}
-
-\begin{frame}{OpenCV}
-\end{frame}
-
-\begin{frame}{PCL}
-\end{frame}
-
 
 \section{Tooling}
 
