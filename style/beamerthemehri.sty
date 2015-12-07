@@ -388,6 +388,22 @@
     }
 }
 
+\newcommand\imageframekeepratio[1]{%
+    {
+    \setbeamertemplate{background canvas}{
+        \noindent\colorbox{black}{%
+           \parbox[c][\paperheight][c]{\paperwidth}{%
+           \includegraphics[width=\paperwidth]{#1}
+            }
+        }
+    }
+    \setbeamertemplate{background}{}
+    \begin{frame}[plain]
+    \end{frame}
+    }
+}
+
+
 % for a video like: figs/video1.mpg, an image called figs/video1_thumb.jpg
 % exists, it is used to preview the video. Otherwise a blank object is returned.
 \newcommand{\includepreview}[1]{{

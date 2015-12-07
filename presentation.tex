@@ -121,7 +121,7 @@ xrightmargin=0.5em
 
 \begin{frame}{Instead, ROS is...}
     \begin{itemize}
-        \item<1-> A fairly simple message passing system designed with robotics in
+        \item<1-> A fairly simple peer-to-peer message passing system designed with robotics in
             mind
         \item<2-> An API to this system (in several languages -- C++ and Python are
             1st tier)
@@ -402,8 +402,11 @@ $ rosrun image_view image_view image:=/processed_image
 
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Into the details: the key concepts}
+\section{The key concepts}
 
 \begin{frame}{Talking Nodes}
 
@@ -445,17 +448,25 @@ $ rosrun image_view image_view image:=/processed_image
     }
 
     \uncover<6-> {
-        \path[->, dashed] ([yshift=2pt]node1.east) edge[bend left] node[label,above right] {action goal} ([xshift=2pt]node2.north) ;
+        \path[->, dashed] ([yshift=2pt]node1.east) edge[bend left] node[label,above right] {\only<6,7>{action goal}} ([xshift=2pt]node2.north) ;
     }
     \uncover<7-> {
-        \path[->, dashed] ([xshift=-2pt]node2.north) edge[bend right] node[label,below left] {result} ([yshift=-2pt]node1.east);
+        \path[->, dashed] ([xshift=-2pt]node2.north) edge[bend right] node[label,below left] {\only<7>{result}} ([yshift=-2pt]node1.east);
 
     }
 
+    \only<8> {
+        \node [rosnode,fill=hriSec3!50] at (-5,0) (roscore) {roscore};
+        \path[dashed] (node1) edge[<->,very thin, bend right] node[label,above] {\tiny XML-RPC} (roscore);
+        \path[dashed] (node2) edge[<->,very thin, bend right] node[label,above] {\tiny XML-RPC} (roscore);
+        \path[dashed] (node3) edge[<->,very thin, bend left] node[label,above right] {\tiny XML-RPC} (roscore);
+
+    }
 
 \end{tikzpicture}
 \only<5>{Services: \Medium synchronous}
 \only<7>{Actions: \Medium asynchronous}
+\only<8>{\tt ROS\_MASTER\_URI=http://<host>:<port>}
 \end{center}
 
 \end{frame}
@@ -521,6 +532,8 @@ data: [32, 57, 51, 36, 61, 55, 41, 63, 60,...
             \texttt{Port}		& \texttt{topic} \tabularnewline
             \texttt{RpcClient/RpcServer} & \texttt{action} (async) or \texttt{service} (sync) \tabularnewline
             \texttt{Bottle}		& \texttt{message} \tabularnewline
+            \midrule
+            \texttt{yarpserver}		& \texttt{roscore} \tabularnewline
             \bottomrule
         \end{tabularx}
         \label{tab:options}
@@ -646,6 +659,21 @@ transforms:
 
 \end{frame}
 
+\begin{frame}{To summarize: key concepts}
+    \begin{itemize}
+        \item Nodes
+        \item Master
+        \item Messages
+        \item Topics
+        \item Services
+        \item Actions
+        \item Transformations/frames
+    \end{itemize}
+\end{frame}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section{Tooling}
 
@@ -666,13 +694,17 @@ transforms:
     \end{table}
 \end{frame}
 
-\begin{frame}{ROS vs YARP terminology}
+\imageframekeepratio{rviz}
+\imageframekeepratio{console}
+\imageframekeepratio{bag}
+\imageframekeepratio{dynamic_reconfigure}
+
+\begin{frame}{ROS vs YARP tools}
     \begin{table}[]
         \begin{tabularx}{\linewidth}{l>{\raggedright}X}
             \toprule
             \textbf{YARP}			& \textbf{ROS} \tabularnewline
             \midrule
-            \texttt{yarpserver}		& \texttt{roscore} \tabularnewline
             \texttt{yarpscope/yarpview}		& \texttt{rviz} \tabularnewline
             \texttt{yarpdatadumper/yarpdataplayer}		& \texttt{rosbag} \tabularnewline
             \texttt{yarpmanager}		& \texttt{roslaunch} \tabularnewline
@@ -683,7 +715,42 @@ transforms:
 
 \end{frame}
 
-\imageframe{rviz}
+\begin{frame}[plain]
+    \centering
+    \resizebox{0.9\textwidth}{!}{%
+        \vspace*{4cm}
+        \begin{tikzpicture}
+
+            \path[small mindmap,
+                  level 1 concept/.append style={sibling angle=360/5}, 
+                  level 2 concept/.append style={sibling angle=60}, 
+                  concept color=hriWarmGreyLight,text=hriWarmGreyDark]
+
+            node[concept] {\Medium ROS}
+            [clockwise from=-180]
+            child[concept color=hriSec1Dark,text=white] { node[concept]{Middleware} 
+                [clockwise from=-120]
+                child[concept color=hriSec1CompDark,text=white] { node[concept]{Standard Interfaces} }
+                child[concept color=hriSec3CompDark,text=white] { node[concept]{Nodes Management} }
+                child[concept color=hriSec2Dark,text=white] { node[concept]{IPC} }
+            }
+            child[concept color=hriSec3Comp,text=white] { node[concept] {Standards and Conventions} }
+            child[concept color=hriSec2CompDark,text=white] { node[concept]{Community}
+                [clockwise from=90]
+                child[concept color=hriSec2Comp,text=white] { node[concept]{Software engineering infrastructure} }
+                child[concept color=hriSec1,text=white] { node[concept] {REPs} }
+                child[concept color=hriSec3,text=white] { node[concept] {ROSCon} }
+            }
+            child[concept color=hriSec3Dark,text=white] { node[concept] {Large software library} 
+                [clockwise from=0]
+                child[concept color=hriSec2Dark,text=white] { node[concept] {Satellite libraries} }
+            }
+            child[concept color=hriSec3CompDark,text=white] { node[concept] {Tooling} };
+
+            \node[align=left] at (-4,4) {\Medium That's all folk!\\ \tt http://ros.org};
+        \end{tikzpicture}
+    }
+\end{frame}
 
 \end{document}
 
