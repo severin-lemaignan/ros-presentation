@@ -71,7 +71,7 @@ def axes4 {
     put {[[t4]]} {
             {axes} 
             {cube}
-            {special |\node at #1 {\small\tt /hand};| (0.6,0,-0.5)}
+            {special |\node at #1 {\small\tt /gripper};| (1,0,-0.5)}
     }
 }
 
