@@ -471,6 +471,75 @@ $ rosrun image_view image_view image:=/processed_image
 
 \end{frame}
 
+\begin{frame}{Nodelets}
+
+\begin{center}
+\begin{tikzpicture}[
+                    >=latex,
+                    every edge/.style={->, draw, very thick},
+                    service/.style={->, draw, very thick,dashed},
+                    rosnode/.style={draw, font=\sf, node distance=0.5, rounded
+                    corners, align=center, inner sep=5pt,fill=hriSec2Dark!50},
+                    topic/.style={font=\tt, node distance=0.5, align=center, inner sep=5pt},
+                    pic/.style={fill=none,draw=none}
+                ]
+
+    \node [rosnode] at (-4,0) (node1) {image acquisition};
+    \node [rosnode] at (0,-2) (node2) {image processor};
+    \node [rosnode] at (4,-4) (node3) {next processing};
+
+        \node [topic] at (-4,-1.5) (topic3) {/image};
+        \node [topic] at (-1,-3.5) (topic1) {/processed\_image};
+        \path (node1) edge[bend right] (node2);
+        \path (node2) edge[bend right] (node3);
+
+
+\end{tikzpicture}
+\end{center}
+
+\end{frame}
+
+
+\begin{frame}[containsverbatim]{Packages, nodes and launch files}
+\begin{shcode}
+$ cd my_package
+$ ls
+CMakeLists.txt
+cfg/
+include/
+launch/
+msgs/
+nodes/
+package.xml
+src/
+$ rosrun my_package my_node
+\end{shcode}
+\end{frame}
+
+\begin{frame}[containsverbatim]{Packages, nodes and launch files}
+\begin{xmlcode}
+<launch>
+
+  <arg name="head_frame" default="head_camera"/>
+  <arg name="image" default="/camera/rgb/image_raw"/>
+
+  <node pkg="attention_tracker" type="focus" />
+
+  <node pkg="attention_tracker" type="estimate">
+    <param name="face_model" 
+        value="$(find attention_tracker)/model.dat" />
+    <remap from="/image" to="$(arg image)"/>
+  </node>
+
+</launch>
+\end{xmlcode}
+\begin{shcode}
+$ roslaunch my_package my_system.launch
+\end{shcode}
+\end{frame}
+
+
+
 \begin{frame}[containsverbatim]{Messages}
 
 \begin{shcode}
@@ -661,7 +730,7 @@ transforms:
 
 \begin{frame}{To summarize: key concepts}
     \begin{itemize}
-        \item Nodes
+        \item Package, Node, Nodelet, Launch files
         \item Master
         \item Messages
         \item Topics
@@ -747,7 +816,11 @@ transforms:
             }
             child[concept color=hriSec3CompDark,text=white] { node[concept] {Tooling} };
 
-            \node[align=left] at (-4,4) {\Medium That's all folk!\\ \tt http://ros.org};
+            \node[align=left] at (-4,4) {\Medium That's all folk!\\ {\tt
+                http://ros.org}};
+
+            \node[align=left] at (0,-4) {Slides available online:\\ {\tt
+            www.github.com/severin-lemaignan/ros-presentation}};
         \end{tikzpicture}
     }
 \end{frame}

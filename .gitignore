@@ -1,4 +1,5 @@
 _minted*
+.minted*
 references/
 sketches/*.tex
 *.nav
