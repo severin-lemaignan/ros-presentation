@@ -31,7 +31,7 @@
 
 \RequirePackage{hyperref}
 
-\author{CHILI Lab, EPFL}
+\author{Séverin Lemaignan -- University of Plymouth}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%% Set up the header and footer  %%%%%%%%%%%%%%%%%%
 \RequirePackage{fancyhdr}
@@ -39,7 +39,7 @@
 \RequirePackage{extramarks} % Required for headers and footers
 \pagestyle{fancy}
 \lhead{} % Top left header
-\chead{CS211 -- \@title} % Top center head
+\chead{\@title} % Top center head
 \rhead{\firstxmark} % Top right header
 \lfoot{\lastxmark} % Bottom left footer
 \cfoot{} % Bottom center footer
@@ -55,12 +55,27 @@
 \renewcommand{\theFancyVerbLine}{
   \sffamily\textcolor[rgb]{0.5,0.5,0.5}{\scriptsize\arabic{FancyVerbLine}}}
 
-\newminted{java}{frame=lines,
-                 linenos=false,
-                 fontsize=\small,
-                 xleftmargin=1.8em}
+\newminted{xml}{frame=lines,
+                   linenos=false,
+                   fontsize=\small,
+                   xleftmargin=1.8em}
 
-\newmintinline[java]{java}{fontsize=\small}
+\newmintinline[xml]{xml}{fontsize=\small}
+
+\newminted{cpp}{frame=lines,
+                   linenos=false,
+                   fontsize=\small,
+                   xleftmargin=1.8em}
+
+\newmintinline[cpp]{cpp}{fontsize=\small}
+
+
+\newminted{python}{frame=lines,
+                   linenos=false,
+                   fontsize=\small,
+                   xleftmargin=1.8em}
+
+\newmintinline[python]{python}{fontsize=\small}
 
 \newminted{sh}{frame=lines,
                  linenos=false,
@@ -77,7 +92,7 @@
 \setcounter{stepsCounter}{1}
 
 \newcommand{\intro}{\section*{Preliminary steps}}
-\newcommand{\step}[1]{\section*{Step \arabic{stepsCounter} -- #1}\stepcounter{stepsCounter}}
+\newcommand{\step}[1]{\section*{Goal \arabic{stepsCounter} -- #1}\stepcounter{stepsCounter}}
 
 \let\oldpart\part
 \renewcommand{\part}[1]{\newpage\oldpart{#1}\setcounter{stepsCounter}{1}}
@@ -99,24 +114,24 @@
 \def\maketitle{%
   \vskip 60\p@
   \begin{center}%
-    {\Large \textbf{Introduction to Visual Computing}}
+    {\Large \textbf{Hands on!}}
     \vskip 3em%
-    {\LARGE Assignment\# \@week \par}%
+    %{\LARGE Assignment\# \@week \par}%
     \vskip 1em%
     {\LARGE \textbf{\@title} \par}%
     \vskip 4.5em%
     {\large \@date \par}%       % Set date in \large size.
   \end{center}\par
 \vskip 3em%
-\noindent\textbf{Description}\par%
-\@thesummary%
-\par\vspace{1em}%
-\noindent\textbf{Objectives}\par%
-\@theobjectives%
-\par\vspace{1em}%
-\noindent\textbf{Specific Challenges}\par%
-\@thechallenges%
-\vspace{1em}%
+%\noindent\textbf{Description}\par%
+%\@thesummary%
+%\par\vspace{1em}%
+%\noindent\textbf{Objectives}\par%
+%\@theobjectives%
+%\par\vspace{1em}%
+%\noindent\textbf{Specific Challenges}\par%
+%\@thechallenges%
+%\vspace{1em}%
 \par}
 
 \def\makesimpletitle{%
@@ -146,8 +161,7 @@
 \begin{center}
 \noindent\fcolorbox{Gray}{MoreBoxColor}{%
 \begin{minipage}{0.9\textwidth}{%
-\noindent\includegraphics[width=0.5cm]{arrow.pdf}\hspace{1em}\textbf{Taking it
-further (optional)}%
+\noindent\includegraphics[width=0.5cm]{arrow.pdf}%
 \par\vspace{1em}%
 #1\par%
 }%

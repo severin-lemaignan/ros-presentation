@@ -1,6 +1,5 @@
 
-TARGETLIST=$(wildcard ./*.tex)
-TARGET=$(TARGETLIST:.tex=.pdf)
+TARGET=$(wildcard ./*.tex)
 
 DOT=$(wildcard figs/*.dot)
 SVG=$(wildcard figs/*.svg)
@@ -23,11 +22,9 @@ svg: $(SVG:.svg=.pdf)
 
 bib: cleanbbls $(TARGET:.pdf=.bbl)
 
+paper: $(TARGET) svg $(DOT:.dot=.pdf)
 
-%.pdf: %.tex
 	TEXFONTS=:./fonts TEXINPUTS=:./fonts:./sty lualatex --shell-escape $<
-
-paper: svg $(TARGET) $(DOT:.dot=.pdf)
 
 clean:
 	rm -f *.aux *.log *.snm *.out *.toc *.nav *intermediate *~ *.glo *.ist $(SVG:.svg=.pdf) $(DOT:.dot=.svg) $(DOT:.dot=.pdf)
