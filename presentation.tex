@@ -186,7 +186,7 @@ $ roslaunch openni_launch openni.launch
 \end{frame}
 
 
-\imageframe{rviz0}
+\imageframe[black]{}{rviz0}
 
 \begin{frame}[containsverbatim]{}
 
@@ -197,7 +197,7 @@ $ rosrun attention_tracker estimate
 
 \end{frame}
 
-\imageframe{rviz}
+\imageframe[black]{}{rviz}
 
 \begin{frame}[containsverbatim]{}
 \begin{shcode}
@@ -301,7 +301,7 @@ $ rosrun rqt_reconfigure rqt_reconfigure
 \end{frame}
 
 
-\imageframe{dynamic_reconfigure.png}
+\imageframe[black]{}{dynamic_reconfigure.png}
 
 \begin{frame}{Example: a simple image processing pipeline}
 
@@ -398,7 +398,7 @@ $ rosrun image_view image_view image:=/processed_image
 \end{frame}
 
 
-\imageframe{image_processor.png}
+\imageframe[black]{}{image_processor.png}
 
 
 
@@ -605,7 +605,6 @@ data: [32, 57, 51, 36, 61, 55, 41, 63, 60,...
             \texttt{yarpserver}		& \texttt{roscore} \tabularnewline
             \bottomrule
         \end{tabularx}
-        \label{tab:options}
     \end{table}
 
     Connections of ports: explicit with YARP, implicit with ROS
@@ -759,14 +758,13 @@ transforms:
             + tons of introspection tools & Print out/publish/call messages, services, nodes \tabularnewline
             \bottomrule
         \end{tabularx}
-        \label{tab:options}
     \end{table}
 \end{frame}
 
-\imageframekeepratio{rviz}
-\imageframekeepratio{console}
-\imageframekeepratio{bag}
-\imageframekeepratio{dynamic_reconfigure}
+\imageframe[black]{}{rviz}
+\imageframe[black]{}{console}
+\imageframe[black]{}{bag}
+\imageframe[black]{}{dynamic_reconfigure}
 
 \begin{frame}{ROS vs YARP tools}
     \begin{table}[]
@@ -779,7 +777,6 @@ transforms:
             \texttt{yarpmanager}		& \texttt{roslaunch} \tabularnewline
             \bottomrule
         \end{tabularx}
-        \label{tab:options}
     \end{table}
 
 \end{frame}
