@@ -1,7 +1,7 @@
 Introduction to ROS
 ===================
 
-A ~45min long introduction to the [Robotic Operating System](http://www.ros.org/).
+A ~2h long introduction to the [Robotic Operating System](http://www.ros.org/).
 
 
 [Download the slides](presentation.pdf)
