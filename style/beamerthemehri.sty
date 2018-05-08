@@ -179,7 +179,7 @@
     \AddToShipoutPictureFG*{\includegraphics[width=\paperwidth]{background.pdf}}
     \begin{minipage}[b][\paperheight]{\textwidth}
     \vspace*{5mm}
-    \includegraphics[height=20mm]{logo}\par
+    \includegraphics[height=15mm]{logo}\par
     \vspace*{5mm}
     \ifx\insertsubtitle\@empty%
     \else%
@@ -310,7 +310,7 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%  Syntax coloring with minted %%%%%%%%%%%%%%%%%%%%
 \RequirePackage[cache]{minted}
 \renewcommand{\theFancyVerbLine}{
-  \sffamily\textcolor[rgb]{0.5,0.5,0.5}{\scriptsize\arabic{FancyVerbLine}}}
+  \sffamily\textcolor[rgb]{0.5,0.5,0.5}{\tiny\arabic{FancyVerbLine}}}
 
 \newminted{cmake}{frame=none,
                  linenos=false,
@@ -341,6 +341,14 @@
                  xleftmargin=1.8em}
 
 \newmintinline[python]{python}{fontsize=\small}
+
+\newminted{md}{frame=none,
+                 linenos=false,
+                 fontsize=\scriptsize,
+                 xleftmargin=0.5em}
+
+\newmintinline[md]{md}{fontsize=\small}
+
 
 \newminted{sh}{frame=lines,
                  linenos=false,
@@ -431,7 +439,7 @@
 }
 
 \newcommand\grid{
-        \draw[help lines] (current page.south west) grid (14,10);
+        \draw[help lines] (-5,-5) grid (5,5);
         \foreach \x in {-5,...,5} {
             \foreach \y in {-5,...,5} {
                 \node at (\x,\y) [anchor=south west,gray]{{\fontsize{1.2mm}{0.1em}\selectfont (\x,\y)}};
