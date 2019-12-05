@@ -93,8 +93,8 @@
 
 \graphicspath{{figs/}}
 
-\title{ROS}
-\subtitle{The Robot Operating System}
+\title{\huge ROS: the Robot Operating System}
+\subtitle{FARSCOPE workshops}
 
 \date{}
 \author{Séverin Lemaignan}
@@ -291,6 +291,21 @@ Finally, we run a 3rd node to display the image:
 
 \imageframe[color=black]{image_processor.png}
 
+\begin{frame}[plain]{}
+    \begin{center}
+        \Large
+        Your turn!
+
+        \begin{enumerate}
+            \item test this image processing node
+            \item create a new ROS node that takes a string as parameter and
+                writes it to the \texttt{/create\_robot} topic
+            \item create your robot! \small{(you \textbf{might} need to \sh{export
+                ROS_MASTER_URI=http://<see ip on whiteboard>:11311} first!)}
+
+        \end{enumerate}
+    \end{center}
+\end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -447,8 +462,64 @@ data: [32, 57, 51, 36, 61, 55, 41, 63, 60,...
 \end{shcode}
 \end{frame}
 
+\begin{frame}[plain]{}
+    \begin{center}
+        \Large
+        Your turn!
+
+        \begin{enumerate}
+            \item what topics do your robot publish?
+            \item can you display the robot's odometry?
+            \item \small{(check \sh{rostopic help}!)}
+            \item Write a small ROS node to control your robot from the
+                keyboard (see code on next slide)
+
+        \end{enumerate}
+    \end{center}
+\end{frame}
+
+\begin{frame}[fragile]{Interactive keyboard controller}
+\begin{pythoncode}
+import sys, select, tty, termios
+
+def isData():
+    return select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], [])
+
+old_settings = termios.tcgetattr(sys.stdin)
+
+try:
+    tty.setcbreak(sys.stdin.fileno())
+
+    v = 0.
+    w = 0.
+
+    while 1:
+        if isData():
+            c = sys.stdin.read(1)
+            key = ord(c.decode('utf-8'))
+            if c == '\x1b':         # x1b is ESC
+                arrow = ord(sys.stdin.read(2)[1].decode('utf-8'))
+                if arrow == 65: # up 
+                    v += 0.1
+                elif arrow == 66: # bottom
+                    v -= 0.1
+                elif arrow == 67: # right 
+                    w += 0.1
+                elif arrow == 68: # left 
+                    w -= 0.1
+                print("v=%.1f, w=%.1f" % (v,w))
+
+            else:
+                print(key)
+
+finally:
+    termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
+\end{pythoncode}
+\end{frame}
+
 \begin{frame}[plain]
     \begin{center}
+        \Large
         What are these \emph{frames}?
     \end{center}
 
@@ -642,6 +713,22 @@ transforms:
 
 \end{frame}
 
+\begin{frame}[plain]{}
+    \begin{center}
+        \Large
+        Your turn!
+
+        \begin{enumerate}
+            \item write a \texttt{tf} broadcaster for your robot
+            \item \small{(you probably first need to subscribe to the odometry
+                topic)}
+            \item Use \texttt{rviz} to display the frames in 3D
+
+        \end{enumerate}
+    \end{center}
+\end{frame}
+
+
 \begin{frame}{To summarize: key concepts}
     \begin{itemize}
         \item Node
@@ -666,7 +753,7 @@ transforms:
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section[Robot arm]{Example: a robotic arm with ROS}
+\section[Robot arm]{Example 1: a robotic arm with ROS}
 
 \imageframe[caption={That's our hardware...}, color=black]{servo-arm2}
 \imageframe[caption={That's what we want...}, color=black]{servo-rviz}
@@ -1144,6 +1231,150 @@ void loop(){
 \end{frame}
 
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section[Navigation]{Example 2: autonomous mapping and navigation with ROS}
+
+\begin{frame}{2D navigation: what do we need?}
+
+    \begin{itemize}
+        \item<+-> where the robot is
+        \item<+-> where the robot goes
+        \item<+-> ...a path between the two...
+        \item<+-> where are the obstacles
+        \item<+-> (both static -- walls -- and dynamic)
+        \item<+-> a robot controller to get it to actually move
+    \end{itemize}
+
+    \pause
+
+    So we will need:
+    \begin{itemize}
+        \item<+-> some localisation system
+        \item<+-> a path planner
+        \item<+-> a map
+    \end{itemize}
+\end{frame}
+
+
+\begin{frame}{2D navigation: what do we already have?}
+
+    On our robots:
+
+    \begin{itemize}
+        \item localisation (odometry + TF)
+        \item<+-> (is it good enough?)
+        \item<+-> obstacle detection (laserscan)
+        \item<+-> a controller (listening to the \texttt{/cmd\_vel} topic)
+    \end{itemize}
+
+    \pause
+    The ROS \texttt{2d\_navigation} 'stack' provides:
+
+    \begin{itemize}
+        \item mapping (SLAM) and localisation (localisation based on Monte-Carlo particle filter)
+        \item global (A*!) and local path planners
+    \end{itemize}
+
+    \pause
+    $\Rightarrow$ we've got almost everything already! Mostly need to 'plumbs'
+    things together.
+\end{frame}
+
+%\imageframe[caption={\small wiki.ros.org/navigation/Tutorials/RobotSetup}]{navigation_setup}
+\imageframe[scale=0.95]{navigation_setup}
+
+\begin{frame}[fragile]{Mapping}
+
+\begin{shcode}
+> sudo apt install ros-melodic-move-base ros-melodic-hector-mapping
+\end{shcode}
+
+Launch your TF broadcaster, and then:
+
+\begin{shcode}
+> rosrun hector_mapping hector_mapping scan:=/<your robot>/scan 
+    _base_frame:=<your robot>_base_link _odom_frame:=<your robot>_odom
+    _map_frame:=<your robot>_map map:=<your robot>_map
+    _map_resolution:=0.5
+\end{shcode}
+
+Open \texttt{rviz} and display the map:
+
+    \begin{center}
+        \includegraphics[width=0.5\linewidth]{mapping-robomaze}
+    \end{center}
+\end{frame}
+
+\begin{frame}{Mapping (2)}
+
+    Then:
+    \begin{itemize}
+        \item Drive your robot around to build a map. \textbf{Drive slowly!}
+        \item Once happy, save your map: \sh{rosrun map_server map_saver}
+    \end{itemize}
+
+    This creates two file: \texttt{map.pgm} (an image, representing the oppancy
+    grid) and \texttt{map.yaml}. Use \sh{rosrun map_server map_server map.yaml
+    map:=/<your robot>/map _frame_id:=<your robot>_map} to re-publish the map later.
+
+    You can now stop \texttt{hector\_mapping}.
+
+\end{frame}
+
+
+\begin{frame}[fragile]{Localisation}
+
+    \texttt{amcl}'s job is to publish the TF transform between the odometry frame
+    (eg \texttt{/WallE\_odom}) and the map frame (eg \texttt{/WallE\_map}): if the
+    odometry drifts, it compensates for the drift, and provides the correct
+    (estimated!) absolute position of the robot.
+
+    \begin{shcode}
+> rosrun amcl amcl scan:=/<your robot>/scan map:=/<your robot>/map
+        _odom_frame_id:=<your robot>_odom
+        _base_frame_id:=<your robot>_base_link
+        _map_frame_id:=<your robot>_map
+    \end{shcode}
+\end{frame}
+
+\begin{frame}[fragile]{Autonomous navigation}
+
+    In addition to the map server and \texttt{amcl}, we need to start the
+    planners:
+
+\begin{xmlcode}
+<node pkg="move_base" type="move_base" respawn="false" 
+                        name="move_base" output="screen" clear_params="true">
+
+    <param name="footprint_padding" value="0.01" />
+    <param name="controller_frequency" value="10.0" />
+    <param name="controller_patience" value="100.0" />
+    <param name="planner_frequency" value="2.0" />
+
+    <rosparam file="costmap_common_params.yaml" command="load" ns="global_costmap" />
+    <rosparam file="global_costmap_params.yaml" command="load" />
+
+    <rosparam file="costmap_common_params.yaml" command="load" ns="local_costmap" />
+    <rosparam file="local_costmap_params.yaml" command="load" />
+
+    <param name="base_local_planner" value="dwa_local_planner/DWAPlannerROS" />
+    <rosparam file="dwa_planner_ros.yaml" command="load" />
+</node>
+\end{xmlcode}
+
+    \small
+    We'll keep that for another day (but if you are curious, have a look at
+    \href{https://www.openrobots.org/morse/doc/stable/user/advanced_tutorials/ros_nav_tutorial.html}{this
+    tutorial} that uses the MORSE simulator. You should be able to adapt it quite
+    easily).
+
+    The ROS navigation setup documentation is available here:
+    \href{https://wiki.ros.org/navigation/Tutorials/RobotSetup}{Setup and Configuration of the Navigation Stack on a Robot}
+\end{frame}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -1314,7 +1545,7 @@ Assuming ROS is correctly installed, we can run our node:
 \begin{shcode}
 > export ROS_PACKAGE_PATH=<prefix>/share:$ROS_PACKAGE_PATH
 > rosrun imgproc process_node
-Dataset: my_image
+Image to be processed: my_image
 \end{shcode}
 
 Add the \sh{export ROS_PACKAGE_PATH...} line to the end of your
