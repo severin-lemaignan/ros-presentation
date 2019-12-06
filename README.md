@@ -1,8 +1,9 @@
-Introduction to ROS
-===================
+Introduction to ROS - day-long workshop
+=======================================
 
-A ~2h long introduction to the [Robotic Operating System](http://www.ros.org/).
+A ~6h long introduction to the [Robotic Operating System](http://www.ros.org/).
 
+Several of the hands-on activities rely on the [https://github.com/severin-lemaignan/robomaze/tree/ros](robomaze interactive simulation game).
 
 [Download the slides](presentation.pdf)
 
