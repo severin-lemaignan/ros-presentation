@@ -1,39 +1,56 @@
 
 LATEX=lualatex
-TARGET=ros.tex
+
+TEXTARGETS=$(wildcard ./*.tex)
+
+TARGET=$(TEXTARGETS:.tex=.pdf)
 
 SKETCHES=$(wildcard sketches/*.sk)
 DOT=$(wildcard figs/*.dot)
 SVG=$(wildcard figs/*.svg)
 
+MODE ?= batchmode
+
 all: paper
 
-%.pdf: %.svg
-	inkscape --export-pdf $(@) $(<)
+$(DOT:.dot=.pdf): %.pdf: %.svg
+$(SVG:.svg=.pdf): %.pdf: %.svg
+	inkscape -o $@ $<
 
 $(SKETCHES:.sk=.tex): %.tex: %.sk
-	sketch $(<) -o $(@)
+	sketch $< -o $@
 
 %.aux: paper
 
 %.svg: %.dot
+	dot -Tsvg -o$@ $<
 
-	twopi -Tsvg -o$(@) $(<)
-
-thumbs:
-
-	./make_video_preview.py ${TARGET}
+%.thumbs: %.tex
+	./make_video_preview.py $<
 
 bib: $(TARGET:.tex=.aux)
-
 	BSTINPUTS=:./style bibtex $(TARGET:.tex=.aux)
 
-paper: $(TARGET) $(SVG:.svg=.pdf) $(DOT:.dot=.pdf) $(SKETCHES:.sk=.tex)
+%.pdf: %.tex
+	TEXINPUTS=:style $(LATEX) --interaction=$(MODE) -shell-escape `basename $<`; if [ $$? -gt 0 ]; then echo "Error while compiling $<"; touch `basename $<`; fi; \
 
-	TEXINPUTS=:./style $(LATEX) --shell-escape $(TARGET)
+paper: $(SVG:.svg=.pdf) $(DOT:.dot=.pdf) $(TARGET)
+
+thumbs: $(TARGET:.pdf=.thumbs)
+
+touch:
+	touch $(TEXTARGETS)
+
+force: touch paper
+
+%.nup: %.pdf
+	#pdfnup --nup 2x5 --no-landscape $<
+	pdfnup --nup 2x5 --no-landscape --delta '2cm 0.45cm' --scale 0.9 $<
+
+nup: $(TARGET:.pdf=.nup)
 
 clean:
-	rm -f *.spl *.idx *.aux *.log *.snm *.out *.toc *.nav *intermediate *~ *.glo *.ist *.bbl *.blg $(SVG:.svg=.pdf) $(DOT:.dot=.svg) $(DOT:.dot=.pdf)
+	rm -f *.vrb *.spl *.idx *.aux *.log *.snm *.out *.toc *.nav *intermediate *~ *.glo *.ist *.bbl *.blg _minted* $(SVG:.svg=.pdf) $(DOT:.dot=.svg) $(DOT:.dot=.pdf)
 
 distclean: clean
 	rm -f $(TARGET:.tex=.pdf)
