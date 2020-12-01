@@ -296,16 +296,43 @@ Finally, we run a 3rd node to display the image:
         \Large
         Your turn!
 
+        Test this image processing node
+    \end{center}
+\end{frame}
+
+\begin{frame}[plain,fragile]{}
+    \begin{center}
+        \Large
+        OfficeBots (with plenty of Wall-Es!)
+
+        \begin{center}
+            \includegraphics[width=0.5\linewidth]{OfficeBots.png}
+        \end{center}
+
         \begin{enumerate}
-            \item test this image processing node
-            \item create a new ROS node that takes a string as parameter and
-                writes it to the \texttt{/create\_robot} topic
-            \item create your robot! \small{(you \textbf{might} need to \sh{export
-                ROS_MASTER_URI=http://<see ip on whiteboard>:11311} first!)}
+            \item \sh{pip3 install officebots}
+            \item go to \url{research.skadge.org}
+            \item start the ROS bridge:
+\begin{shcode}
+> roscore
+# in a different terminal
+> officebots-ros <name of your robot>
+\end{shcode}
+            \item click the blue 'sleepy robot' icon in the game
 
         \end{enumerate}
     \end{center}
 \end{frame}
+
+\begin{frame}[plain]{}
+    \begin{itemize}
+        \item what are the available topics? (check \sh{rostopic
+            list|info|echo})
+        \item what are the topic we can write on? read from?
+        \item what data type is exchanged?
+    \end{itemize}
+\end{frame}
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -467,54 +494,17 @@ data: [32, 57, 51, 36, 61, 55, 41, 63, 60,...
         \Large
         Your turn!
 
-        \begin{enumerate}
-            \item what topics do your robot publish?
+        \begin{itemize}
             \item can you display the robot's odometry?
-            \item \small{(check \sh{rostopic help}!)}
+            \item in a graphical way?
+            \item \small{(check \sh{rviz}!)}
             \item Write a small ROS node to control your robot from the
-                keyboard (see code on next slide)
+                keyboard
+                (\href{https://github.com/severin-lemaignan/robomaze/blob/ros/scripts/keyboard.py}{use
+                that as a starting point})
 
-        \end{enumerate}
+        \end{itemize}
     \end{center}
-\end{frame}
-
-\begin{frame}[fragile]{Interactive keyboard controller}
-\begin{pythoncode}
-import sys, select, tty, termios
-
-def isData():
-    return select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], [])
-
-old_settings = termios.tcgetattr(sys.stdin)
-
-try:
-    tty.setcbreak(sys.stdin.fileno())
-
-    v = 0.
-    w = 0.
-
-    while 1:
-        if isData():
-            c = sys.stdin.read(1)
-            key = ord(c.decode('utf-8'))
-            if c == '\x1b':         # x1b is ESC
-                arrow = ord(sys.stdin.read(2)[1].decode('utf-8'))
-                if arrow == 65: # up 
-                    v += 0.1
-                elif arrow == 66: # bottom
-                    v -= 0.1
-                elif arrow == 67: # right 
-                    w += 0.1
-                elif arrow == 68: # left 
-                    w -= 0.1
-                print("v=%.1f, w=%.1f" % (v,w))
-
-            else:
-                print(key)
-
-finally:
-    termios.tcsetattr(sys.stdin, termios.TCSADRAIN, old_settings)
-\end{pythoncode}
 \end{frame}
 
 \begin{frame}[plain]
@@ -713,20 +703,20 @@ transforms:
 
 \end{frame}
 
-\begin{frame}[plain]{}
-    \begin{center}
-        \Large
-        Your turn!
-
-        \begin{enumerate}
-            \item write a \texttt{tf} broadcaster for your robot
-            \item \small{(you probably first need to subscribe to the odometry
-                topic)}
-            \item Use \texttt{rviz} to display the frames in 3D
-
-        \end{enumerate}
-    \end{center}
-\end{frame}
+%\begin{frame}[plain]{}
+%    \begin{center}
+%        \Large
+%        Your turn!
+%
+%        \begin{enumerate}
+%            \item write a \texttt{tf} broadcaster for your robot
+%            \item \small{(you probably first need to subscribe to the odometry
+%                topic)}
+%            \item Use \texttt{rviz} to display the frames in 3D
+%
+%        \end{enumerate}
+%    \end{center}
+%\end{frame}
 
 
 \begin{frame}{To summarize: key concepts}
@@ -1267,7 +1257,7 @@ void loop(){
         \item localisation (odometry + TF)
         \item<+-> (is it good enough?)
         \item<+-> obstacle detection (laserscan)
-        \item<+-> a controller (listening to the \texttt{/cmd\_vel} topic)
+        \item<+-> a controller (publishing to the \texttt{/cmd\_vel} topic)
     \end{itemize}
 
     \pause
@@ -1289,16 +1279,13 @@ void loop(){
 \begin{frame}[fragile]{Mapping}
 
 \begin{shcode}
-> sudo apt install ros-melodic-move-base ros-melodic-hector-mapping
+> sudo apt install ros-noetic-move-base ros-noetic-slam-gmapping ros-noetic-map-server
 \end{shcode}
 
 Launch your TF broadcaster, and then:
 
 \begin{shcode}
-> rosrun hector_mapping hector_mapping scan:=/<your robot>/scan 
-    _base_frame:=<your robot>_base_link _odom_frame:=<your robot>_odom
-    _map_frame:=<your robot>_map map:=<your robot>_map
-    _map_resolution:=0.5
+> rosrun gmapping slam_mapping _map_update_interval:=1 _linearUpdate:=0.2 _angularUpdate:=0.2
 \end{shcode}
 
 Open \texttt{rviz} and display the map:
@@ -1317,10 +1304,10 @@ Open \texttt{rviz} and display the map:
     \end{itemize}
 
     This creates two file: \texttt{map.pgm} (an image, representing the oppancy
-    grid) and \texttt{map.yaml}. Use \sh{rosrun map_server map_server map.yaml
-    map:=/<your robot>/map _frame_id:=<your robot>_map} to re-publish the map later.
+    grid) and \texttt{map.yaml}. Use \sh{rosrun map_server map_server map.yaml}
+    to re-publish the map later.
 
-    You can now stop \texttt{hector\_mapping}.
+    You can now stop \texttt{gmapping}.
 
 \end{frame}
 
@@ -1333,11 +1320,8 @@ Open \texttt{rviz} and display the map:
     (estimated!) absolute position of the robot.
 
     \begin{shcode}
-> rosrun amcl amcl scan:=/<your robot>/scan map:=/<your robot>/map
-        _odom_frame_id:=<your robot>_odom
-        _base_frame_id:=<your robot>_base_link
-        _map_frame_id:=<your robot>_map
-    \end{shcode}
+> rosrun amcl amcl
+\end{shcode}
 \end{frame}
 
 \begin{frame}[fragile]{Autonomous navigation}
